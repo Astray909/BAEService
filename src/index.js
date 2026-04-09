@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
+const { version } = require('../package.json');
 
 admin.initializeApp({
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -13,7 +14,7 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'BAE Service is running' });
+  res.json({ status: 'ok', message: 'BAE Service is running', version });
 });
 
 app.get('/health', (req, res) => {
@@ -27,14 +28,18 @@ app.post('/datePlanSubmit', async (req, res) => {
     return res.status(400).json({ error: 'dateTimeUtc, title, and body are required' });
   }
 
-  const docRef = await db.collection('datePlans').add({
-    dateTimeUtc,
-    title,
-    body,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
-
-  res.status(201).json({ id: docRef.id });
+  try {
+    const docRef = await db.collection('datePlans').add({
+      dateTimeUtc,
+      title,
+      body,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    res.status(201).json({ id: docRef.id });
+  } catch (err) {
+    console.error('Firestore error:', err);
+    res.status(500).json({ error: 'Failed to save date plan', details: err.message });
+  }
 });
 
 app.listen(PORT, () => {
