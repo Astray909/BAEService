@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const admin = require('firebase-admin');
 const { version } = require('../package.json');
+const cors = require('cors');
 
 admin.initializeApp({
   projectId: process.env.FIREBASE_PROJECT_ID,
@@ -9,6 +10,7 @@ admin.initializeApp({
 const db = admin.firestore();
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());

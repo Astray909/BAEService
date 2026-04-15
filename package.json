@@ -1,6 +1,6 @@
 {
   "name": "bae-service",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "description": "Node.js backend service for Google Cloud Run",
   "main": "src/index.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "dev": "nodemon src/index.js"
   },
   "dependencies": {
+    "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^4.18.2",
     "firebase-admin": "^13.7.0"
