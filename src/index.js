@@ -45,6 +45,23 @@ app.delete('/datePlans/:id', async (req, res) => {
   }
 });
 
+app.put('/datePlans/:id', async (req, res) => {
+  const { id } = req.params;
+  const { dateTimeUtc, title, body = null } = req.body;
+  
+  if (!dateTimeUtc || !title) {
+    return res.status(400).json({ error: 'dateTimeUtc and title are required' });
+  }
+
+  try {
+    await db.collection('datePlans').doc(id).update({ dateTimeUtc, title, body });
+    res.status(200).json({ id });
+  } catch (err) {
+    console.error('Firestore error:', err);
+    res.status(500).json({ error: 'Failed to update date plan', details: err.message });
+  }
+});
+
 app.post('/datePlanSubmit', async (req, res) => {
   const { dateTimeUtc, title, body = null } = req.body;
 
