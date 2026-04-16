@@ -23,11 +23,33 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
-app.post('/datePlanSubmit', async (req, res) => {
-  const { dateTimeUtc, title, body } = req.body;
+app.get('/datePlans', async (req, res) => {
+  try {
+    const snapshot = await db.collection('datePlans').orderBy('dateTimeUtc', 'asc').get();
+    const plans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(plans);
+  } catch (err) {
+    console.error('Firestore error:', err);
+    res.status(500).json({ error: 'Failed to fetch date plans', details: err.message });
+  }
+});
 
-  if (!dateTimeUtc || !title || !body) {
-    return res.status(400).json({ error: 'dateTimeUtc, title, and body are required' });
+app.delete('/datePlans/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.collection('datePlans').doc(id).delete();
+    res.status(204).send();
+  } catch (err) {
+    console.error('Firestore error:', err);
+    res.status(500).json({ error: 'Failed to delete date plan', details: err.message });
+  }
+});
+
+app.post('/datePlanSubmit', async (req, res) => {
+  const { dateTimeUtc, title, body = null } = req.body;
+
+  if (!dateTimeUtc || !title) {
+    return res.status(400).json({ error: 'dateTimeUtc and title are required' });
   }
 
   try {
