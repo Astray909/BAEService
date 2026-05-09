@@ -1,6 +1,6 @@
 {
   "name": "bae-service",
-  "version": "0.6.9",
+  "version": "0.6.10",
   "description": "Node.js backend service for Google Cloud Run",
   "main": "src/index.js",
   "scripts": {
