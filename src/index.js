@@ -45,16 +45,24 @@ app.delete('/datePlans/:id', async (req, res) => {
   }
 });
 
+const VALID_TYPES = ['eat', 'do'];
+
 app.put('/datePlans/:id', async (req, res) => {
   const { id } = req.params;
-  const { dateTimeUtc, title, body = null } = req.body;
-  
+  const { dateTimeUtc, title, body = null, type } = req.body;
+
   if (!dateTimeUtc || !title) {
     return res.status(400).json({ error: 'dateTimeUtc and title are required' });
   }
+  if (type !== undefined && !VALID_TYPES.includes(type)) {
+    return res.status(400).json({ error: `type must be one of ${VALID_TYPES.join(', ')}` });
+  }
+
+  const update = { dateTimeUtc, title, body };
+  if (type !== undefined) update.type = type;
 
   try {
-    await db.collection('datePlans').doc(id).update({ dateTimeUtc, title, body });
+    await db.collection('datePlans').doc(id).update(update);
     res.status(200).json({ id });
   } catch (err) {
     console.error('Firestore error:', err);
@@ -63,10 +71,13 @@ app.put('/datePlans/:id', async (req, res) => {
 });
 
 app.post('/datePlanSubmit', async (req, res) => {
-  const { dateTimeUtc, title, body = null } = req.body;
+  const { dateTimeUtc, title, body = null, type = 'eat' } = req.body;
 
   if (!dateTimeUtc || !title) {
     return res.status(400).json({ error: 'dateTimeUtc and title are required' });
+  }
+  if (!VALID_TYPES.includes(type)) {
+    return res.status(400).json({ error: `type must be one of ${VALID_TYPES.join(', ')}` });
   }
 
   try {
@@ -74,6 +85,7 @@ app.post('/datePlanSubmit', async (req, res) => {
       dateTimeUtc,
       title,
       body,
+      type,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     });
     res.status(201).json({ id: docRef.id });
